@@ -13,6 +13,11 @@ module.exports = {
       patterns: [
         {from: 'node_modules/three/examples/js/libs/draco', to: 'draco'}
       ]
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {from: 'assets/profiles', to: 'profiles'}
+      ]
     })
   ],
   module: {
