@@ -157,6 +157,7 @@ class App {
       this.handModels.right = [
           handModelFactory.createHandModel( this.hand1, "boxes" ),
           handModelFactory.createHandModel( this.hand1, "spheres" ),
+          handModelFactory.createHandModel( this.hand1, 'mesh' ),
           handModelFactory.createHandModel( this.hand1, "oculus", { model: "lowpoly" } ),
           handModelFactory.createHandModel( this.hand1, "oculus" )
       ];
@@ -166,15 +167,17 @@ class App {
           this.hand1.add( model );
       } );
 
-      this.handModels.right[ 0 ].visible = true;
+      this.handModels.right[ this.currentHandModel.right ].visible = true;
 
       const self = this;
       this.hand1.addEventListener( 'pinchend', evt => {
           self.changeSize.bind(self, evt.handedness );
       } );
-      // this.hand1.addEventListener( 'pinchend', evt => {
-      //     self.cycleHandModel( evt.handedness );
-      // } );
+      this.hand1.addEventListener( 'pinchend', evt => {
+          self.handModels.left[self.currentHandModel.left].visible = false
+          self.currentHandModel.left = (self.currentHandModel.left + 1) % self.handModels.left.size()
+          self.handModels.left[self.currentHandModel.left].visible = true
+      } );
 
       // Hand 2
       this.hand2 = this.renderer.xr.getHand( 1 );
@@ -183,6 +186,7 @@ class App {
       this.handModels.left = [
           handModelFactory.createHandModel( this.hand2, "boxes" ),
           handModelFactory.createHandModel( this.hand2, "spheres" ),
+          handModelFactory.createHandModel( this.hand2, 'mesh' ),
           handModelFactory.createHandModel( this.hand2, "oculus", { model: "lowpoly" } ),
           handModelFactory.createHandModel( this.hand2, "oculus" )
       ];
@@ -195,7 +199,9 @@ class App {
       this.handModels.left[ this.currentHandModel.left ].visible = true;
 
       this.hand2.addEventListener( 'pinchend', evt => {
-          self.cycleHandModel( evt.handedness );
+          self.handModels.left[self.currentHandModel.left].visible = false
+          self.currentHandModel.left = (self.currentHandModel.left + 1) % self.handModels.left.size()
+          self.handModels.left[self.currentHandModel.left].visible = true
       } );
   }
 
