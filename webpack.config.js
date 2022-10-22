@@ -14,11 +14,11 @@ module.exports = {
         {from: 'node_modules/three/examples/js/libs/draco', to: 'draco'}
       ]
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {from: 'assets/profiles', to: 'profiles'}
-      ]
-    })
+    // new CopyWebpackPlugin({
+    //   patterns: [
+    //     {from: 'assets/profiles', to: 'profiles'}
+    //   ]
+    // })
   ],
   module: {
     rules: [
@@ -42,6 +42,6 @@ module.exports = {
     //   directory: path.join(__dirname, 'src/logo.png')
     // },
     compress: true,
-    port: 9000
+    port: 8080
   }
 };

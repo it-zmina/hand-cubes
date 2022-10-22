@@ -5,7 +5,7 @@ import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
-const assetsPath = "profiles"
+const assetsPath = "profiles/"
 
 import blimp from "../assets/Blimp.glb"
 
@@ -149,17 +149,15 @@ class App {
       this.handModels = {left: null, right: null}
       this.currentHandModel = {left: 0, right: 0}
 
-      const handModelFactory = new XRHandModelFactory().setPath(assetsPath)
+      const handModelFactory = new XRHandModelFactory()
 
-      this.hand1 = this.renderer.xr.getHand( 0 );
+      this.hand1 = this.renderer.xr.getHand( 1 );
       this.scene.add( this.hand1 );
 
       this.handModels.right = [
           handModelFactory.createHandModel( this.hand1, "boxes" ),
           handModelFactory.createHandModel( this.hand1, "spheres" ),
           handModelFactory.createHandModel( this.hand1, 'mesh' ),
-          handModelFactory.createHandModel( this.hand1, "oculus", { model: "lowpoly" } ),
-          handModelFactory.createHandModel( this.hand1, "oculus" )
       ];
 
       this.handModels.right.forEach( model => {
@@ -171,45 +169,45 @@ class App {
 
       const self = this;
       this.hand1.addEventListener( 'pinchend', evt => {
-          self.changeSize.bind(self, evt.handedness );
+          self.changeAngle.bind(self, evt.handedness ).call();
       } );
       this.hand1.addEventListener( 'pinchend', evt => {
-          self.handModels.left[self.currentHandModel.left].visible = false
-          self.currentHandModel.left = (self.currentHandModel.left + 1) % self.handModels.left.size()
-          self.handModels.left[self.currentHandModel.left].visible = true
+          self.handModels.right[self.currentHandModel.right].visible = false
+          self.currentHandModel.right = (self.currentHandModel.right + 1) % self.handModels.right.length
+          self.handModels.right[self.currentHandModel.right].visible = true
       } );
 
       // Hand 2
-      this.hand2 = this.renderer.xr.getHand( 1 );
-      this.scene.add( this.hand2 );
+      this.hand0 = this.renderer.xr.getHand( 0 );
+      this.scene.add( this.hand0 );
 
       this.handModels.left = [
-          handModelFactory.createHandModel( this.hand2, "boxes" ),
-          handModelFactory.createHandModel( this.hand2, "spheres" ),
-          handModelFactory.createHandModel( this.hand2, 'mesh' ),
-          handModelFactory.createHandModel( this.hand2, "oculus", { model: "lowpoly" } ),
-          handModelFactory.createHandModel( this.hand2, "oculus" )
+          handModelFactory.createHandModel( this.hand0, "boxes" ),
+          handModelFactory.createHandModel( this.hand0, "spheres" ),
+          handModelFactory.createHandModel( this.hand0, 'mesh' ),
+          // handModelFactory.createHandModel( this.hand0, "oculus", { model: "lowpoly" } ),
+          // handModelFactory.createHandModel( this.hand0, "oculus" )
       ];
 
       this.handModels.left.forEach( model => {
           model.visible = false;
-          this.hand2.add( model );
+          this.hand0.add( model );
       } );
 
       this.handModels.left[ this.currentHandModel.left ].visible = true;
 
-      this.hand2.addEventListener( 'pinchend', evt => {
+      this.hand0.addEventListener( 'pinchend', evt => {
           self.handModels.left[self.currentHandModel.left].visible = false
-          self.currentHandModel.left = (self.currentHandModel.left + 1) % self.handModels.left.size()
+          self.currentHandModel.left = (self.currentHandModel.left + 1) % self.handModels.left.length
           self.handModels.left[self.currentHandModel.left].visible = true
       } );
   }
 
-  changeSize(handedness) {
-      console.debug(this)
-
-      this.blimp.rotateY(45)
-  }
+    changeAngle(handedness) {
+        if (blimp) {
+            this.blimp.rotateY(45)
+        }
+    }
 
     cycleHandModel( hand ) {
         this.handModels[ hand ][ this.currentHandModel[ hand ] ].visible = false;
