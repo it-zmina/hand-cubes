@@ -9,8 +9,6 @@ import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 const assetsPath = "profiles/"
 
 import blimp from "../assets/Blimp.glb"
-import dog from "../assets/shiba_inu_dog.glb"
-
 
 class App {
     constructor() {
@@ -93,12 +91,6 @@ class App {
             scene.scale.set(scale, scale, scale)
             self.blimp = scene
         })
-
-        this.loadAsset(dog, .5, 0, -1, scene => {
-            const scale = .1
-            scene.scale.set(scale, scale, scale)
-            self.dog = scene
-        })
     }
 
     loadAsset(gltfFilename, x, y, z, sceneHandler) {
@@ -140,6 +132,9 @@ class App {
         gripLeft.add(controllerModel.createControllerModel(gripLeft))
         this.scene.add(gripLeft)
 
+        this.gripLeft = gripLeft
+        this.gripRight = gripRight
+
         // Add beams
         const geometry = new THREE.BufferGeometry()
             .setFromPoints([
@@ -175,16 +170,6 @@ class App {
 
         this.handModels.right[this.currentHandModel.right].visible = true;
 
-        const self = this;
-        this.hand1.addEventListener('pinchend', evt => {
-            self.changeAngle.bind(self, evt.handedness).call();
-        });
-        this.hand1.addEventListener('pinchend', evt => {
-            self.handModels.right[self.currentHandModel.right].visible = false
-            self.currentHandModel.right = (self.currentHandModel.right + 1) % self.handModels.right.length
-            self.handModels.right[self.currentHandModel.right].visible = true
-        });
-
         // Hand 2
         this.hand0 = this.renderer.xr.getHand(0);
         this.scene.add(this.hand0);
@@ -201,6 +186,38 @@ class App {
         });
 
         this.handModels.left[this.currentHandModel.left].visible = true;
+
+        this.addActions()
+    }
+
+    addActions() {
+        const self = this;
+
+        this.gripRight.addEventListener('selectstart', evt => {
+            self.blimp.rotateY(45)
+        })
+
+        this.gripRight.addEventListener('squeezestart', evt => {
+            self.blimp.translateY(.1)
+        })
+
+        this.gripLeft.addEventListener('selectstart', evt => {
+            self.blimp.rotateY(-45)
+        })
+
+        this.gripLeft.addEventListener('squeezestart', evt => {
+            self.blimp.translateY(-.1)
+        })
+
+        this.hand1.addEventListener('pinchend', evt => {
+            self.changeAngle.bind(self, evt.handedness).call();
+        });
+
+        this.hand1.addEventListener('pinchend', evt => {
+            self.handModels.right[self.currentHandModel.right].visible = false
+            self.currentHandModel.right = (self.currentHandModel.right + 1) % self.handModels.right.length
+            self.handModels.right[self.currentHandModel.right].visible = true
+        });
 
         this.hand0.addEventListener('pinchend', evt => {
             self.handModels.left[self.currentHandModel.left].visible = false
