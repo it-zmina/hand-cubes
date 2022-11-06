@@ -6,8 +6,6 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 
-const assetsPath = "profiles/"
-
 import blimp from "../assets/Blimp.glb"
 
 class App {
@@ -123,8 +121,7 @@ class App {
 
         // Add left grip controller
         const gripRight = this.renderer.xr.getControllerGrip(0)
-        this.controllerL =
-            gripRight.add(controllerModel.createControllerModel(gripRight))
+        gripRight.add(controllerModel.createControllerModel(gripRight))
         this.scene.add(gripRight)
 
         // Add right grip controller
@@ -193,19 +190,19 @@ class App {
     addActions() {
         const self = this;
 
-        this.gripRight.addEventListener('selectstart', evt => {
+        this.gripRight.addEventListener('selectstart', () => {
             self.blimp.rotateY(45)
         })
 
-        this.gripRight.addEventListener('squeezestart', evt => {
+        this.gripRight.addEventListener('squeezestart', () => {
             self.blimp.translateY(.1)
         })
 
-        this.gripLeft.addEventListener('selectstart', evt => {
+        this.gripLeft.addEventListener('selectstart', () => {
             self.blimp.rotateY(-45)
         })
 
-        this.gripLeft.addEventListener('squeezestart', evt => {
+        this.gripLeft.addEventListener('squeezestart', () => {
             self.blimp.translateY(-.1)
         })
 
@@ -213,20 +210,21 @@ class App {
             self.changeAngle.bind(self, evt.handedness).call();
         });
 
-        this.hand1.addEventListener('pinchend', evt => {
-            self.handModels.right[self.currentHandModel.right].visible = false
-            self.currentHandModel.right = (self.currentHandModel.right + 1) % self.handModels.right.length
-            self.handModels.right[self.currentHandModel.right].visible = true
+        this.hand1.addEventListener('pinchend', (evt) => {
+            self.cycleHandModel.bind(self, evt.handedness).call()
+            // self.handModels.right[self.currentHandModel.right].visible = false
+            // self.currentHandModel.right = (self.currentHandModel.right + 1) % self.handModels.right.length
+            // self.handModels.right[self.currentHandModel.right].visible = true
         });
 
-        this.hand0.addEventListener('pinchend', evt => {
+        this.hand0.addEventListener('pinchend', () => {
             self.handModels.left[self.currentHandModel.left].visible = false
             self.currentHandModel.left = (self.currentHandModel.left + 1) % self.handModels.left.length
             self.handModels.left[self.currentHandModel.left].visible = true
         });
     }
 
-    changeAngle(handedness) {
+    changeAngle() {
         if (blimp) {
             this.blimp.rotateY(45)
         }
