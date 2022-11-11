@@ -1,12 +1,11 @@
 import * as THREE from 'three'
 import {VRButton} from "three/examples/jsm/webxr/VRButton"
-import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
-import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 
 import blimp from "../assets/Blimp.glb"
+import {loadAsset} from "./utils/loaders";
 
 class App {
     constructor() {
@@ -84,32 +83,12 @@ class App {
 
         sphere.position.set(1.5, 0, 0)
 
-        this.loadAsset(blimp, -.5, .5, 1, scene => {
+        loadAsset(blimp, -.5, .5, 1, gltfScene => {
             const scale = 5
-            scene.scale.set(scale, scale, scale)
-            self.blimp = scene
+			gltfScene.scale.set(scale, scale, scale)
+            self.blimp = gltfScene
+			self.scene.add(gltfScene)
         })
-    }
-
-    loadAsset(gltfFilename, x, y, z, sceneHandler) {
-        const self = this
-        const loader = new GLTFLoader()
-        // Provide a DRACOLoader instance to decode compressed mesh data
-        const draco = new DRACOLoader()
-        draco.setDecoderPath('draco/')
-        loader.setDRACOLoader(draco)
-
-        loader.load(gltfFilename, (gltf) => {
-                const gltfScene = gltf.scene
-                self.scene.add(gltfScene)
-                gltfScene.position.set(x, y, z)
-                if (sceneHandler) {
-                    sceneHandler(gltfScene)
-                }
-            },
-            null,
-            (error) => console.error(`An error happened: ${error}`)
-        )
     }
 
     setupVR() {
