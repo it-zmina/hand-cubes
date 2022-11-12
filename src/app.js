@@ -185,38 +185,51 @@ class App {
     addActions() {
         const self = this;
 
-        this.gripRight.addEventListener('selectstart', () => {
-            // self.blimp.rotateY(90)
-        })
+        // this.gripRight.addEventListener('selectstart', () => {
+        //     // self.blimp.rotateY(90)
+        // })
+		//
+        // this.gripRight.addEventListener('squeezestart', () => {
+        //     self.blimp.translateY(.1)
+        // })
+		//
+        // this.gripLeft.addEventListener('selectstart', () => {
+        //     // self.blimp.rotateY(-90)
+        // })
+		//
+        // this.gripLeft.addEventListener('squeezestart', () => {
+        //     self.blimp.translateY(-.1)
+        // })
+		//
+        // this.handRight.addEventListener('pinchend', (evt) => {
+        //     self.cycleHandModel.bind(self, evt.handedness).call()
+        // })
+		//
+		// this.handRight.addEventListener('pinchend', evt => {
+		// 	self.changeAngle.bind(self, evt.handedness).call();
+		// })
+		//
+        // this.handLeft.addEventListener('pinchend', (evt) => {
+		// 	self.cycleHandModel.bind(self, evt.handedness).call()
+        // })
+		//
+		// this.handLeft.addEventListener('pinchend', evt => {
+		// 	self.changeAngle.bind(self, evt.handedness).call();
+		// })
 
-        this.gripRight.addEventListener('squeezestart', () => {
-            self.blimp.translateY(.1)
-        })
+		this.handLeft.addEventListener('pinchstart', evt => {
+			self.onPinchStartLeft.bind(self, evt).call()
+		})
+		this.handLeft.addEventListener('pinchend', () => {
+			self.scaling.active = false;
+		})
 
-        this.gripLeft.addEventListener('selectstart', () => {
-            // self.blimp.rotateY(-90)
-        })
-
-        this.gripLeft.addEventListener('squeezestart', () => {
-            self.blimp.translateY(-.1)
-        })
-
-        this.handRight.addEventListener('pinchend', (evt) => {
-            self.cycleHandModel.bind(self, evt.handedness).call()
-        })
-
+		this.handRight.addEventListener('pinchstart', evt => {
+			self.onPinchStartRight.bind(self, evt).call()
+		})
 		this.handRight.addEventListener('pinchend', evt => {
-			self.changeAngle.bind(self, evt.handedness).call();
+			self.onPinchEndRight.bind(self, evt).call()
 		})
-
-        this.handLeft.addEventListener('pinchend', (evt) => {
-			self.cycleHandModel.bind(self, evt.handedness).call()
-        })
-
-		this.handLeft.addEventListener('pinchend', evt => {
-			self.changeAngle.bind(self, evt.handedness).call();
-		})
-
 
 	}
 
