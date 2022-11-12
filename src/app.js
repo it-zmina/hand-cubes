@@ -7,7 +7,22 @@ import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 import blimp from "../assets/Blimp.glb"
 import {loadAsset} from "./utils/loaders";
 
+const SphereRadius = 0.05;
+
 class App {
+	tmpVector1 = new THREE.Vector3();
+	tmpVector2 = new THREE.Vector3();
+
+	grabbing = false;
+	scaling = {
+		active: false,
+		initialDistance: 0,
+		object: null,
+		initialScale: 1
+	};
+
+	spheres = [];
+
     constructor() {
         const container = document.createElement('div')
         document.body.appendChild(container)
@@ -202,7 +217,9 @@ class App {
 			self.changeAngle.bind(self, evt.handedness).call();
 		})
 
+
 	}
+
 
     changeAngle(hand) {
         if (blimp && hand === 'right') {
@@ -220,6 +237,106 @@ class App {
 		}
     }
 
+	onPinchStartLeft( event ) {
+
+		const controller = event.target;
+
+		if ( this.grabbing ) {
+
+			const indexTip = controller.joints[ 'index-finger-tip' ];
+			const sphere = this.collideObject( indexTip );
+
+			if ( sphere ) {
+
+				const sphere2 = this.handRight.userData.selected;
+				console.log( 'sphere1', sphere, 'sphere2', sphere2 );
+				if ( sphere === sphere2 ) {
+
+					this.scaling.active = true;
+					this.scaling.object = sphere;
+					this.scaling.initialScale = sphere.scale.x;
+					this.scaling.initialDistance = indexTip.position.distanceTo( this.handRight.joints[ 'index-finger-tip' ].position );
+					return;
+
+				}
+
+			}
+
+		}
+
+		const geometry = new THREE.BoxGeometry( SphereRadius, SphereRadius, SphereRadius );
+		const material = new THREE.MeshStandardMaterial( {
+			color: Math.random() * 0xffffff,
+			roughness: 1.0,
+			metalness: 0.0
+		} );
+		const spawn = new THREE.Mesh( geometry, material );
+		spawn.geometry.computeBoundingSphere();
+
+		const indexTip = controller.joints[ 'index-finger-tip' ];
+		spawn.position.copy( indexTip.position );
+		spawn.quaternion.copy( indexTip.quaternion );
+
+		this.spheres.push( spawn );
+
+		this.scene.add( spawn );
+
+	}
+
+	collideObject( indexTip ) {
+
+		for ( let i = 0; i < this.spheres.length; i ++ ) {
+
+			const sphere = this.spheres[ i ];
+			const distance = indexTip.getWorldPosition( this.tmpVector1 ).distanceTo( sphere.getWorldPosition( this.tmpVector2 ) );
+
+			if ( distance < sphere.geometry.boundingSphere.radius * sphere.scale.x ) {
+
+				return sphere;
+
+			}
+
+		}
+
+		return null;
+
+	}
+
+	onPinchStartRight( event ) {
+
+		const controller = event.target;
+		const indexTip = controller.joints[ 'index-finger-tip' ];
+		const object = this.collideObject( indexTip );
+		if ( object ) {
+
+			this.grabbing = true;
+			indexTip.attach( object );
+			controller.userData.selected = object;
+			console.log( 'Selected', object );
+
+		}
+
+	}
+
+	onPinchEndRight( event ) {
+
+		const controller = event.target;
+
+		if ( controller.userData.selected !== undefined ) {
+
+			const object = controller.userData.selected;
+			object.material.emissive.b = 0;
+			this.scene.attach( object );
+
+			controller.userData.selected = undefined;
+			this.grabbing = false;
+
+		}
+
+		this.scaling.active = false;
+
+	}
+
     resize() {
         this.camera.aspect = window.innerWidth / window.innerHeight
         this.camera.updateProjectionMatrix()
@@ -232,10 +349,14 @@ class App {
             this.mesh.rotateY(0.01)
         }
 
-        // if (this.blimp) {
-        //   this.blimp.rotateY(0.1 * xAxis)
-        //   this.blimp.translateY(.02 * yAxis)
-        // }
+		if ( this.scaling.active ) {
+			const indexTip1Pos = this.handLeft.joints[ 'index-finger-tip' ].position;
+			const indexTip2Pos = this.handRight.joints[ 'index-finger-tip' ].position;
+			const distance = indexTip1Pos.distanceTo( indexTip2Pos );
+			const newScale = this.scaling.initialScale + distance / this.scaling.initialDistance - 1;
+			this.scaling.object.scale.setScalar( newScale );
+		}
+
         this.renderer.render(this.scene, this.camera)
     }
 }
