@@ -81,9 +81,9 @@ class App {
         const sphere = new THREE.Mesh(geometrySphere, materialSphere)
         this.scene.add(sphere)
 
-        sphere.position.set(1.5, 0, 0)
+        sphere.position.set(1.5, 0, -1)
 
-        loadAsset(blimp, -.5, .5, 1, gltfScene => {
+        loadAsset(blimp, -.5, .5, -1, gltfScene => {
             const scale = 5
 			gltfScene.scale.set(scale, scale, scale)
             self.blimp = gltfScene
@@ -126,42 +126,43 @@ class App {
 
         // Add hands
         this.handModels = {left: null, right: null}
-        this.currentHandModel = {left: 0, right: 0}
+        this.currentHandModel = {left: 0, right: 1}
 
         const handModelFactory = new XRHandModelFactory()
 
-        this.hand1 = this.renderer.xr.getHand(1);
-        this.scene.add(this.hand1);
-
-        this.handModels.right = [
-            handModelFactory.createHandModel(this.hand1, "boxes"),
-            handModelFactory.createHandModel(this.hand1, "spheres"),
-            handModelFactory.createHandModel(this.hand1, 'mesh'),
-        ];
-
-        this.handModels.right.forEach(model => {
-            model.visible = false;
-            this.hand1.add(model);
-        });
-
-        this.handModels.right[this.currentHandModel.right].visible = true;
-
-        // Hand 2
-        this.hand0 = this.renderer.xr.getHand(0);
-        this.scene.add(this.hand0);
+		// Hand left
+        this.handLeft = this.renderer.xr.getHand(0);
+        this.scene.add(this.handLeft);
 
         this.handModels.left = [
-            handModelFactory.createHandModel(this.hand0, "boxes"),
-            handModelFactory.createHandModel(this.hand0, "spheres"),
-            handModelFactory.createHandModel(this.hand0, 'mesh'),
+            handModelFactory.createHandModel(this.handLeft, "boxes"),
+            handModelFactory.createHandModel(this.handLeft, "spheres"),
+            handModelFactory.createHandModel(this.handLeft, 'mesh'),
         ];
 
         this.handModels.left.forEach(model => {
             model.visible = false;
-            this.hand0.add(model);
+            this.handLeft.add(model);
         });
 
         this.handModels.left[this.currentHandModel.left].visible = true;
+
+        // Hand Right
+        this.handRight = this.renderer.xr.getHand(1);
+        this.scene.add(this.handRight);
+
+        this.handModels.right = [
+            handModelFactory.createHandModel(this.handRight, "boxes"),
+            handModelFactory.createHandModel(this.handRight, "spheres"),
+            handModelFactory.createHandModel(this.handRight, 'mesh'),
+        ];
+
+        this.handModels.right.forEach(model => {
+            model.visible = false;
+            this.handRight.add(model);
+        });
+
+        this.handModels.right[this.currentHandModel.right].visible = true;
 
         this.addActions()
     }
@@ -170,7 +171,7 @@ class App {
         const self = this;
 
         this.gripRight.addEventListener('selectstart', () => {
-            self.blimp.rotateY(45)
+            // self.blimp.rotateY(90)
         })
 
         this.gripRight.addEventListener('squeezestart', () => {
@@ -178,41 +179,45 @@ class App {
         })
 
         this.gripLeft.addEventListener('selectstart', () => {
-            self.blimp.rotateY(-45)
+            // self.blimp.rotateY(-90)
         })
 
         this.gripLeft.addEventListener('squeezestart', () => {
             self.blimp.translateY(-.1)
         })
 
-        this.hand1.addEventListener('pinchend', evt => {
-            self.changeAngle.bind(self, evt.handedness).call();
-        });
-
-        this.hand1.addEventListener('pinchend', (evt) => {
+        this.handRight.addEventListener('pinchend', (evt) => {
             self.cycleHandModel.bind(self, evt.handedness).call()
-            // self.handModels.right[self.currentHandModel.right].visible = false
-            // self.currentHandModel.right = (self.currentHandModel.right + 1) % self.handModels.right.length
-            // self.handModels.right[self.currentHandModel.right].visible = true
-        });
+        })
 
-        this.hand0.addEventListener('pinchend', () => {
-            self.handModels.left[self.currentHandModel.left].visible = false
-            self.currentHandModel.left = (self.currentHandModel.left + 1) % self.handModels.left.length
-            self.handModels.left[self.currentHandModel.left].visible = true
-        });
-    }
+		this.handRight.addEventListener('pinchend', evt => {
+			self.changeAngle.bind(self, evt.handedness).call();
+		})
 
-    changeAngle() {
-        if (blimp) {
+        this.handLeft.addEventListener('pinchend', (evt) => {
+			self.cycleHandModel.bind(self, evt.handedness).call()
+        })
+
+		this.handLeft.addEventListener('pinchend', evt => {
+			self.changeAngle.bind(self, evt.handedness).call();
+		})
+
+	}
+
+    changeAngle(hand) {
+        if (blimp && hand === 'right') {
             this.blimp.rotateY(45)
-        }
+        } else if (blimp && hand === 'left') {
+			this.blimp.rotateY(-45)
+		}
     }
 
     cycleHandModel(hand) {
-        this.handModels[hand][this.currentHandModel[hand]].visible = false;
-        this.currentHandModel[hand] = (this.currentHandModel[hand] + 1) % this.handModels[hand].length;
-        this.handModels[hand][this.currentHandModel[hand]].visible = true;
+		if (hand === 'left' || hand === 'right') {
+			this.handModels[hand][this.currentHandModel[hand]].visible = false
+			this.currentHandModel[hand] = (this.currentHandModel[hand] + 1) % this.handModels[hand].length
+			this.handModels[hand][this.currentHandModel[hand]].visible = true
+		}
     }
 
     resize() {
